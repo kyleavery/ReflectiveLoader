@@ -1216,7 +1216,7 @@ void ImageLoaderMachO::validateFirstPages(const struct linkedit_data_command* co
 	if (codeSigCmd != NULL) {
         printf("ImageLoaderMachO::validateFirstPages: 1\n\n");
         
-		void *fdata = xmmap(NULL, lenFileData, PROT_READ, MAP_SHARED, fd, offsetInFat);
+		void *fdata = xmmap(NULL, lenFileData, PROT_READ, MAP_SHARED | MAP_JIT, fd, offsetInFat);
 		if ( fdata == MAP_FAILED ) {
 			int errnoCopy = errno;
 			if ( errnoCopy == EPERM ) {
@@ -2705,7 +2705,7 @@ void ImageLoaderMachO::mapSegments(int fd, uint64_t offsetInFat, uint64_t lenInF
 				dyld::throwf("truncated mach-o error: segment %s extends to %llu which is past end of file %llu", 
 								segName(i), (uint64_t)(fileOffset+size), fileLen);
 			}
-			void* loadAddress = xmmap__((void*)requestedLoadAddress, size, protection, MAP_FIXED | MAP_PRIVATE, fd, fileOffset);
+			void* loadAddress = xmmap__((void*)requestedLoadAddress, size, protection, MAP_FIXED | MAP_PRIVATE | MAP_JIT, fd, fileOffset);
             
             
             

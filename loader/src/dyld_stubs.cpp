@@ -89,7 +89,14 @@ namespace dyld {
 
 /** mmap/alloc functions. Suffix "__" added to avoid intersection with original implementations form dyld */
 extern "C" int vm_alloc__(vm_address_t* addr, vm_size_t size, uint32_t flags) {
-    return ::vm_allocate(mach_task_self(), addr, size, flags);
+    int prot = (flags & VM_PROT_EXECUTE) ? (PROT_READ | PROT_EXEC) : (PROT_READ | PROT_WRITE);
+    void* base = (void*)(*addr);
+    void* result = ::mmap(base, size, prot, MAP_ANONYMOUS | MAP_PRIVATE | MAP_JIT, -1, 0);
+    if (result == MAP_FAILED) {
+        return errno;
+    }
+    *addr = (vm_address_t)result;
+    return 0;
 }
 
 extern "C" void* xmmap__(void* addr, size_t len, int prot, int flags, int fd, off_t offset) {
